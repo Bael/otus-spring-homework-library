@@ -26,8 +26,11 @@ repositories {
 
 
 dependencies {
+
     compile('org.springframework.boot:spring-boot-starter-jdbc')
+    compile('org.springframework.boot:spring-boot-parent:$springBootVersion.RELEASE')
     compile('org.springframework.shell:spring-shell-starter:2.0.0.RELEASE')
     runtime('com.h2database:h2')
+    compile('com.h2database:h2:1.4.197')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
