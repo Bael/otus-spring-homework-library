@@ -8,9 +8,15 @@ public interface WriterDAO {
 
     long createWriter(Writer writer);
     void updateWriter(Writer writer);
-    void deleteWriter(Writer writer);
+
+    void deleteById(long id);
     List<Writer> findByName(String name);
 
+    List<Writer> findAll();
+
+    Writer findById(long id);
+
+    List<Writer> authorsByBookId(long bookId);
 
 
 }

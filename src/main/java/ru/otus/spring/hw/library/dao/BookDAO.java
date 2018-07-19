@@ -7,11 +7,17 @@ import java.util.List;
 public interface BookDAO {
 
     long createBook(Book book);
-    List<Book> findBooksByTitle(String title);
-    List<Book> findBooksByAuthor(String title);
-    List<Book> findBooksByGenres(String title);
+
+    List<Book> findByTitle(String title);
+
+    List<Book> findAll();
+
+    List<Book> findByAuthorName(String title);
+
+    List<Book> findByGenreName(String title);
     Book findById(long id);
-    Book deleteById(long id);
+
+    void deleteById(long id);
     void updateBook(Book book);
 
 
