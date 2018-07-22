@@ -1,16 +1,37 @@
 package ru.otus.spring.hw.library.service;
 
 import org.springframework.stereotype.Service;
+import ru.otus.spring.hw.library.dao.WriterDAO;
+import ru.otus.spring.hw.library.domain.Writer;
+
+import java.util.List;
 
 @Service
 public class WriterServiceImpl implements WriterService {
-    @Override
-    public void createWriter() {
 
+    private WriterDAO writerDAO;
+
+    public WriterServiceImpl(WriterDAO writerDAO) {
+        this.writerDAO = writerDAO;
     }
 
     @Override
-    public void findAll() {
+    public void createWriter(Writer writer) {
+        writerDAO.createWriter(writer);
+    }
 
+    @Override
+    public List<Writer> findAll() {
+        return writerDAO.findAll();
+    }
+
+    @Override
+    public Writer ensureWriter(String name) {
+        return writerDAO.ensureByName(name);
+    }
+
+    @Override
+    public List<Writer> authorsByGenre(String genre) {
+        return writerDAO.authorsByGenre(genre);
     }
 }

@@ -72,12 +72,50 @@ public class WriterDAOImpl implements WriterDAO {
     }
 
     @Override
+    public Writer ensureByName(String name) {
+        Writer writer = findByExactName(name);
+        if (writer == null) {
+            writer = new Writer(name);
+            long id = createWriter(writer);
+            writer = findById(id);
+        }
+        return writer;
+
+
+    }
+
+
+    private Writer findByExactName(String name) {
+        final HashMap<String, Object> params = new HashMap<>();
+        params.put("name", name);
+        List<Writer> writers = jdbc.query(" select * from writers where name = :name ", params, new WriterMapper());
+        if (writers.size() == 0) {
+            return null;
+        } else {
+            return writers.get(0);
+        }
+    }
+
+    @Override
     public List<Writer> authorsByBookId(long bookId) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("bookId", bookId);
         return jdbc.query("select writers.* from writers inner join book_author ba on writers.id = ba.authorid  "
                         + " inner join books on books.id = ba.bookid where books.id = :bookId",
                 params, new WriterMapper());
+    }
+
+    @Override
+    public List<Writer> authorsByGenre(String genre) {
+        final HashMap<String, Object> params = new HashMap<>();
+        params.put("genre", genre);
+        return jdbc.query("select writers.* from writers inner join book_author ba on writers.id = ba.authorid  "
+                        + " inner join books on books.id = ba.bookid "
+                        + " inner join book_genre bg on books.id = bg.bookid "
+                        + " inner join genres on genres.id = bg.genreid where genres.name = :genre "
+                ,
+                params, new WriterMapper());
+
     }
 
     private static class WriterMapper implements RowMapper<Writer> {

@@ -16,7 +16,11 @@ public interface WriterDAO {
 
     Writer findById(long id);
 
+    Writer ensureByName(String name);
+
     List<Writer> authorsByBookId(long bookId);
+
+    List<Writer> authorsByGenre(String genre);
 
 
 }

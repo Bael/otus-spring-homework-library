@@ -131,8 +131,8 @@ public class BookDAOImpl implements BookDAO {
     public List<Book> findByAuthorName(String name) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("authorName", name);
-        return jdbc.query("select books.* books join book_author ba books.id = ba.bookid  "
-                        + " join authors on authors.id = ba.authorid where authors.name like :authorName",
+        return jdbc.query("select books.* from books join book_author as ba on books.id = ba.bookid  "
+                        + " join writers on writers.id = ba.authorid where writers.name like :authorName",
                 params, new BookMapper());
 
     }
@@ -141,7 +141,7 @@ public class BookDAOImpl implements BookDAO {
     public List<Book> findByGenreName(String name) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("genreName", name);
-        return jdbc.query("select books.* books join book_genre ga books.id = ga.bookid  "
+        return jdbc.query("select books.* from books join book_genre ga on books.id = ga.bookid  "
                         + " join genres on genres.id = ga.genreid where genres.name like :genreName",
                 params, new BookMapper());
     }

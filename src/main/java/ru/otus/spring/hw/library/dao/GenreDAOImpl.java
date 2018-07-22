@@ -83,9 +83,20 @@ public class GenreDAOImpl implements GenreDAO {
 
     }
 
+    @Override
+    public Genre ensureGenre(String name) {
+        final HashMap<String, Object> params = new HashMap<>();
+        params.put("name", name);
+        List<Genre> genres = jdbc.query(" select * from genres where name = :name", params, new GenreMapper());
+        if (genres.size() == 0) {
+            long id = createGenre(new Genre(name));
+            return findById(id);
+        }
+        return genres.get(0);
+
+    }
 
     private static class GenreMapper implements RowMapper<Genre> {
-
         @Override
         public Genre mapRow(ResultSet resultSet, int i) throws SQLException {
 

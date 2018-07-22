@@ -89,7 +89,7 @@ public class BookDAOImplTest {
         Book book = new Book();
         book.setTitle("Путешествие Геккельбери Финна");
         long id = bookDAO.createBook(book);
-        List<Book> books = bookDAO.findByTitle("Геккельбери");
+        List<Book> books = bookDAO.findByTitle("Путешествие Геккельбери Финна");
         Assert.assertTrue(books.stream().allMatch(book1 -> book1.getId() == id && book1.getTitle().equals(book.getTitle())));
     }
 
