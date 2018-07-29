@@ -62,10 +62,6 @@ public class WriterDAOImplTest {
         Assert.assertEquals(2, writerDAO.findByName("Butcher").size());
     }
 
-    @Test
-    public void findAll() {
-        Assert.assertEquals(7, writerDAO.findAll().size());
-    }
 
     @Test
     public void authorsByBookId() {

@@ -47,7 +47,7 @@ public class Book {
     }
 
     public List<Writer> getAuthors() {
-        return authors;
+        return authors != null ? authors : new ArrayList<>();
     }
 
     public void setAuthors(List<Writer> authors) {
@@ -55,7 +55,12 @@ public class Book {
     }
 
     public List<Genre> getGenres() {
-        return genres;
+        if (genres == null) {
+            return new ArrayList<>();
+        } else {
+            return genres;
+        }
+
     }
 
     public void setGenres(List<Genre> genres) {

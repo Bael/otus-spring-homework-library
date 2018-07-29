@@ -20,8 +20,11 @@ public class GenreDAOImpl implements GenreDAO {
 
     private NamedParameterJdbcOperations jdbc;
 
+    private final GenreMapper genreMapper;
+
     public GenreDAOImpl(NamedParameterJdbcOperations jdbc) {
         this.jdbc = jdbc;
+        genreMapper = new GenreMapper();
     }
 
     @Override
@@ -41,7 +44,7 @@ public class GenreDAOImpl implements GenreDAO {
     public Genre findById(long id) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("id", id);
-        return jdbc.queryForObject(" select * from genres where id = :id ", params, new GenreMapper());
+        return jdbc.queryForObject(" select * from genres where id = :id ", params, genreMapper);
     }
 
     @Override
@@ -65,13 +68,13 @@ public class GenreDAOImpl implements GenreDAO {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("name", "%" + name + "%");
 
-        return jdbc.query(" select * from genres where name like :name", params, new GenreMapper());
+        return jdbc.query(" select * from genres where name like :name", params, genreMapper);
 
     }
 
     @Override
     public List<Genre> findAll() {
-        return jdbc.query(" select * from genres  ", new GenreMapper());
+        return jdbc.query(" select * from genres  ", genreMapper);
     }
 
     @Override
@@ -79,7 +82,7 @@ public class GenreDAOImpl implements GenreDAO {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("bookId", bookId);
         return jdbc.query("select genres.* from books inner join book_genre bg on books.id = bg.bookid  "
-                + " inner join genres on genres.id = bg.genreid where books.id = :bookId", params, new GenreMapper());
+                + " inner join genres on genres.id = bg.genreid where books.id = :bookId", params, genreMapper);
 
     }
 
@@ -87,7 +90,7 @@ public class GenreDAOImpl implements GenreDAO {
     public Genre ensureGenre(String name) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("name", name);
-        List<Genre> genres = jdbc.query(" select * from genres where name = :name", params, new GenreMapper());
+        List<Genre> genres = jdbc.query(" select * from genres where name = :name", params, genreMapper);
         if (genres.size() == 0) {
             long id = createGenre(new Genre(name));
             return findById(id);

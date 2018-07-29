@@ -11,6 +11,7 @@ import ru.otus.spring.hw.library.domain.Writer;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -18,18 +19,17 @@ import java.util.Objects;
 @Repository
 public class WriterDAOImpl implements WriterDAO {
 
+    private final WriterMapper rowMapper;
     private NamedParameterJdbcOperations jdbc;
 
     public WriterDAOImpl(NamedParameterJdbcOperations jdbc) {
         this.jdbc = jdbc;
+        rowMapper = new WriterMapper();
     }
 
     @Override
     public long createWriter(Writer writer) {
-        final HashMap<String, Object> params = new HashMap<>();
-        params.put("name", writer.getName());
-
-        final SqlParameterSource ps = new MapSqlParameterSource(params);
+        final SqlParameterSource ps = new MapSqlParameterSource(Collections.singletonMap("name", writer.getName()));
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update("Insert into writers (`name`) values (:name)", ps, keyHolder);
@@ -47,28 +47,26 @@ public class WriterDAOImpl implements WriterDAO {
 
     @Override
     public void deleteById(long id) {
-        final HashMap<String, Object> params = new HashMap<>();
-        params.put("id", id);
-        jdbc.update("delete from writers where id = :id ", params);
+        jdbc.update("delete from writers where id = :id ", Collections.singletonMap("id", id));
     }
 
     @Override
     public List<Writer> findByName(String name) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("name", "%" + name + "%");
-        return jdbc.query(" select * from writers where name like :name", params, new WriterMapper());
+        return jdbc.query(" select * from writers where name like :name", params, rowMapper);
     }
 
     @Override
     public List<Writer> findAll() {
-        return jdbc.query(" select * from writers ", new WriterMapper());
+        return jdbc.query(" select * from writers ", rowMapper);
     }
 
     @Override
     public Writer findById(long id) {
-        final HashMap<String, Object> params = new HashMap<>();
-        params.put("id", id);
-        return jdbc.queryForObject(" select * from writers where id = :id ", params, new WriterMapper());
+
+        return jdbc.queryForObject(" select * from writers where id = :id ",
+                Collections.singletonMap("id", id), rowMapper);
     }
 
     @Override
@@ -80,15 +78,13 @@ public class WriterDAOImpl implements WriterDAO {
             writer = findById(id);
         }
         return writer;
-
-
     }
 
 
     private Writer findByExactName(String name) {
         final HashMap<String, Object> params = new HashMap<>();
         params.put("name", name);
-        List<Writer> writers = jdbc.query(" select * from writers where name = :name ", params, new WriterMapper());
+        List<Writer> writers = jdbc.query(" select * from writers where name = :name ", params, rowMapper);
         if (writers.size() == 0) {
             return null;
         } else {
@@ -102,7 +98,7 @@ public class WriterDAOImpl implements WriterDAO {
         params.put("bookId", bookId);
         return jdbc.query("select writers.* from writers inner join book_author ba on writers.id = ba.authorid  "
                         + " inner join books on books.id = ba.bookid where books.id = :bookId",
-                params, new WriterMapper());
+                params, rowMapper);
     }
 
     @Override
@@ -114,7 +110,7 @@ public class WriterDAOImpl implements WriterDAO {
                         + " inner join book_genre bg on books.id = bg.bookid "
                         + " inner join genres on genres.id = bg.genreid where genres.name = :genre "
                 ,
-                params, new WriterMapper());
+                params, rowMapper);
 
     }
 

@@ -23,6 +23,7 @@ import static org.springframework.shell.table.CellMatchers.at;
 public class UIShell {
 
 
+    private static final int TERMINAL_WIDTH = 80;
     private final BookService bookService;
     private final GenreService genreService;
     private final WriterService writerService;
@@ -157,7 +158,7 @@ public class UIShell {
 
         }
 
-        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(80);
+        return tableBuilder.addFullBorder(BorderStyle.fancy_light).build().render(TERMINAL_WIDTH);
     }
 
 }

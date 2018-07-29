@@ -61,10 +61,6 @@ public class GenreDAOImplTest {
         Assert.assertEquals(2, genreDAO.findGenres("saga").size());
     }
 
-    @Test
-    public void findAll() {
-        Assert.assertEquals(4, genreDAO.findAll().size());
-    }
 
     @Test
     public void genresByBookId() {
