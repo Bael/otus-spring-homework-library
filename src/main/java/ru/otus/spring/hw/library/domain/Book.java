@@ -1,34 +1,62 @@
 package ru.otus.spring.hw.library.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
+@Entity
+@Table(name = "Books")
+@NamedNativeQuery(query = "select books.* from books join book_author as ba on books.id = ba.bookid  "
+        + " join writers on writers.id = ba.authorid where writers.name like :authorName"
+        , name = "Books.queryBooksByAuthorName", resultClass = Book.class)
 public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private long id;
+    private String title;
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(name = "BOOK_AUTHOR",
+            joinColumns = @JoinColumn(name = "bookid"),
+            inverseJoinColumns = @JoinColumn(name = "authorid"))
+    private Set<Writer> authors = new HashSet<>();
+
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    }, fetch = FetchType.EAGER)
+
+    @JoinTable(name = "BOOK_GENRE",
+            joinColumns = @JoinColumn(name = "bookid"),
+            inverseJoinColumns = @JoinColumn(name = "genreid"))
+    private Set<Genre> genres = new HashSet<>();
+
 
     public Book(int id, String title) {
         this.id = id;
         this.title = title;
-        genres = new ArrayList<>();
-        authors = new ArrayList<>();
     }
 
     public Book() {
     }
 
-    public Book(long id, String title, List<Genre> genres, List<Writer> authors) {
+    public Book(String title) {
+        this.title = title;
+    }
+
+    public Book(long id, String title, Set<Genre> genres, Set<Writer> authors) {
         this.id = id;
         this.title = title;
         this.authors = authors;
         this.genres = genres;
     }
 
-    public Book(String title, List<Writer> authors, List<Genre> genres) {
+    public Book(String title, Set<Writer> authors, Set<Genre> genres) {
         this.title = title;
         this.authors = authors;
         this.genres = genres;
     }
-
-
 
     public long getId() {
         return id;
@@ -46,30 +74,45 @@ public class Book {
         this.title = title;
     }
 
-    public List<Writer> getAuthors() {
-        return authors != null ? authors : new ArrayList<>();
+    public Set<Writer> getAuthors() {
+        return authors;
     }
 
-    public void setAuthors(List<Writer> authors) {
+    public void setAuthors(Set<Writer> authors) {
         this.authors = authors;
     }
 
-    public List<Genre> getGenres() {
-        if (genres == null) {
-            return new ArrayList<>();
-        } else {
-            return genres;
+    public void addAuthor(Writer author) {
+        if (authors == null) {
+            authors = new HashSet<>();
         }
-
+        authors.add(author);
+        author.getBooks().add(this);
     }
 
-    public void setGenres(List<Genre> genres) {
+    public void addGenre(Genre genre) {
+        if (genres == null) {
+            genres = new HashSet<>();
+        }
+        genres.add(genre);
+        genre.getBooks().add(this);
+    }
+
+    public Set<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<Genre> genres) {
         this.genres = genres;
     }
 
-    private long id;
-    private String title;
-    private List<Writer> authors;
-    private List<Genre> genres;
-
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", authors=" + authors +
+                ", genres=" + genres +
+                '}';
+    }
 }

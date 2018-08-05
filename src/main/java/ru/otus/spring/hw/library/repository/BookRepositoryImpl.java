@@ -1,54 +1,105 @@
-package ru.otus.spring.hw.library.dao;
+package ru.otus.spring.hw.library.repository;
 
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.hw.library.domain.Book;
-import ru.otus.spring.hw.library.domain.Genre;
-import ru.otus.spring.hw.library.domain.Writer;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import java.util.List;
 
+@SuppressWarnings("JpaQueryApiInspection")
 @Repository
-public class BookDAOImpl implements BookDAO {
+public class BookRepositoryImpl implements BookRepository {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    private GenreRepository genreRepository;
+    private WriterRepository writerRepository;
 
 
-    private static final String SELECT_STATEMENT = "SELECT * FROM BOOKS ";
+    public BookRepositoryImpl(GenreRepository genreRepository, WriterRepository writerRepository) {
+        this.genreRepository = genreRepository;
+        this.writerRepository = writerRepository;
+    }
 
-    private final NamedParameterJdbcOperations jdbc;
-    private GenreDAO genreDAO;
-    private WriterDAO writerDAO;
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void createBook(Book book) {
+        em.persist(book);
+    }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Book findById(long id) {
+        return em.find(Book.class, id);
+    }
 
-    public BookDAOImpl(NamedParameterJdbcOperations jdbc, GenreDAO genreDAO, WriterDAO writerDAO) {
-        this.jdbc = jdbc;
-        this.genreDAO = genreDAO;
-        this.writerDAO = writerDAO;
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, noRollbackFor = Exception.class)
+    public List<Book> findByTitleLike(String title) {
+        TypedQuery<Book> query = em.createQuery("select b from Book b where b.title like :title ", Book.class);
+        query.setParameter("title", "%" + title + "%");
+        return query.getResultList();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, noRollbackFor = Exception.class)
+    public List<Book> findByTitle(String title) {
+        TypedQuery<Book> query = em.createQuery("select b from Book b where b.title = :title ", Book.class);
+        query.setParameter("title", title);
+        return query.getResultList();
     }
 
 
     @Override
-    @Transactional
-    public long createBook(Book book) {
-        final SqlParameterSource ps = new MapSqlParameterSource(Collections.singletonMap("title", book.getTitle()));
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbc.update("Insert into books (`title`) values (:title)", ps, keyHolder);
-        long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
-
-        insertGenres(id, book.getGenres());
-        insertAuthors(id, book.getAuthors());
-        return id;
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true, noRollbackFor = Exception.class)
+    public List<Book> findAll() {
+        TypedQuery<Book> query = em.createQuery("select b from Book b", Book.class);
+        return query.getResultList();
     }
 
-    /* genres of book */
+    @Override
+    public List<Book> findByAuthorName(String name) {
+        Query query = em.createNamedQuery("Books.queryBooksByAuthorName", Book.class)
+                .setParameter("authorName", name);
+        final List<Book> resultList = query.getResultList();
+        return resultList;
+    }
+
+    @Override
+    public List<Book> findByGenreName(String genre) {
+        TypedQuery<Book> query = em.createQuery("select b from Book b join Genre g where g.name = :genre", Book.class);
+        query.setParameter("genre", genre);
+        return query.getResultList();
+    }
+
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void deleteById(long id) {
+
+        Book book = findById(id);
+        em.remove(book);
+    }
+
+    @Override
+    @Transactional
+    public void updateBook(Book book) {
+        em.merge(book);
+
+    }
+
+
+    /*
+
+
+
+
     private void deleteGenres(long bookId) {
         jdbc.update("delete from BOOK_GENRE  where bookid = :id", Collections.singletonMap("id", bookId));
     }
@@ -69,7 +120,7 @@ public class BookDAOImpl implements BookDAO {
         insertGenres(bookId, genres);
     }
 
-    /* authors of book */
+
     private void deleteAuthors(long bookId) {
         jdbc.update("delete from BOOK_AUTHOR where bookid = :id", Collections.singletonMap("id", bookId));
     }
@@ -146,18 +197,5 @@ public class BookDAOImpl implements BookDAO {
         ensureGenres(book.getId(), book.getGenres());
     }
 
-    private class BookMapper implements RowMapper<Book> {
-
-        @Override
-        public Book mapRow(ResultSet resultSet, int i) throws SQLException {
-
-            int id = resultSet.getInt("id");
-            String title = resultSet.getString("title");
-            List<Genre> genres = genreDAO.genresByBookId(id);
-            List<Writer> authors = writerDAO.authorsByBookId(id);
-            return new Book(id, title, genres, authors);
-        }
-    }
-
-
+*/
 }

@@ -1,37 +1,59 @@
 package ru.otus.spring.hw.library.service;
 
 import org.springframework.stereotype.Service;
-import ru.otus.spring.hw.library.dao.WriterDAO;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import ru.otus.spring.hw.library.domain.Book;
 import ru.otus.spring.hw.library.domain.Writer;
+import ru.otus.spring.hw.library.repository.BookRepository;
+import ru.otus.spring.hw.library.repository.WriterRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class WriterServiceImpl implements WriterService {
 
-    private WriterDAO writerDAO;
+    private WriterRepository writerRepository;
+    private BookRepository bookRepository;
 
-    public WriterServiceImpl(WriterDAO writerDAO) {
-        this.writerDAO = writerDAO;
+    public WriterServiceImpl(WriterRepository writerRepository, BookRepository bookRepository) {
+        this.writerRepository = writerRepository;
+        this.bookRepository = bookRepository;
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public void createWriter(Writer writer) {
-        writerDAO.createWriter(writer);
+        writerRepository.createWriter(writer);
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public List<Writer> findAll() {
-        return writerDAO.findAll();
+        return writerRepository.findAll();
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public Writer ensureWriter(String name) {
-        return writerDAO.ensureByName(name);
+        return writerRepository.ensureByName(name);
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED)
     public List<Writer> authorsByGenre(String genre) {
-        return writerDAO.authorsByGenre(genre);
+
+        return writerRepository.authorsByGenre(genre);
+    }
+
+    @Override
+    public List<Writer> getAuthorsByBookId(long id) {
+        Book book = bookRepository.findById(id);
+        if (book != null) {
+            return new ArrayList<>(book.getAuthors());
+        } else {
+            return new ArrayList<>();
+        }
     }
 }

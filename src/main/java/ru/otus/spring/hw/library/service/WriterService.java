@@ -13,4 +13,6 @@ public interface WriterService {
     Writer ensureWriter(String name);
 
     List<Writer> authorsByGenre(String genre);
+
+    List<Writer> getAuthorsByBookId(long id);
 }

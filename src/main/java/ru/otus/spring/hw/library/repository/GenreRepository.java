@@ -1,12 +1,12 @@
-package ru.otus.spring.hw.library.dao;
+package ru.otus.spring.hw.library.repository;
 
 import ru.otus.spring.hw.library.domain.Genre;
 
 import java.util.List;
 
-public interface GenreDAO {
+public interface GenreRepository {
 
-    long createGenre(Genre genre);
+    void createGenre(Genre genre);
 
     Genre findById(long id);
 
@@ -15,6 +15,8 @@ public interface GenreDAO {
     void deleteById(long id);
 
     List<Genre> findGenres(String name);
+
+    Genre findGenre(String name);
 
     List<Genre> findAll();
 

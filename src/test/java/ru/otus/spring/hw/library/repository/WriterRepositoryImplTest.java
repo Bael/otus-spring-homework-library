@@ -1,4 +1,4 @@
-package ru.otus.spring.hw.library.dao;
+package ru.otus.spring.hw.library.repository;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,18 +11,16 @@ import org.springframework.shell.jline.ScriptShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.otus.spring.hw.library.domain.Writer;
 
-import java.util.List;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
         ScriptShellApplicationRunner.SPRING_SHELL_SCRIPT_ENABLED + "=false",
         InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=false"
 })
-public class WriterDAOImplTest {
+public class WriterRepositoryImplTest {
 
 
     @Autowired
-    WriterDAO writerDAO;
+    WriterRepository writerDAO;
 
     @Before
     public void setUp() {
@@ -41,7 +39,9 @@ public class WriterDAOImplTest {
 
     @Test
     public void updateWriter() {
-        long id = writerDAO.createWriter(new Writer("Tendryakov"));
+        Writer w = new Writer("Tendryakov");
+        writerDAO.createWriter(w);
+        long id = w.getId();
         Writer writer = new Writer(id, "Tenkerry");
         writerDAO.updateWriter(writer);
         Writer updatedWriter = writerDAO.findById(id);
@@ -62,10 +62,10 @@ public class WriterDAOImplTest {
         Assert.assertEquals(2, writerDAO.findByName("Butcher").size());
     }
 
-
     @Test
-    public void authorsByBookId() {
-        List<Writer> list = writerDAO.authorsByBookId(100);
-        System.out.println("writers: " + list);
+    public void findByExactName() {
+        Assert.assertNotNull(writerDAO.findByExactName("Roger Gelyazny"));
     }
+
+
 }

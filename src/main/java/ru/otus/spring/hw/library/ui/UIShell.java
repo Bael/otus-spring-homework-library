@@ -12,8 +12,10 @@ import ru.otus.spring.hw.library.service.GenreService;
 import ru.otus.spring.hw.library.service.WriterService;
 
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.shell.table.CellMatchers.at;
@@ -24,9 +26,9 @@ public class UIShell {
 
 
     private static final int TERMINAL_WIDTH = 80;
-    private final BookService bookService;
-    private final GenreService genreService;
-    private final WriterService writerService;
+    private BookService bookService;
+    private GenreService genreService;
+    private WriterService writerService;
 
     public UIShell(BookService bookService, GenreService genreService, WriterService writerService) {
         this.bookService = bookService;
@@ -44,27 +46,31 @@ public class UIShell {
     @ShellMethod(value = "Create new book. Args are: name of book, genres (separated by comma) and names of authors (separated by comma).", key = {"create-book", "создать-книгу"})
     private String createBook(@Size(min = 1) String nameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors) {
 
-        List<Genre> genresList = getGenresList(genres);
-        List<Writer> writersList = getWritersList(authors);
+        Set<String> genresList = getGenresList(genres);
+        Set<String> writersList = getWritersList(authors);
 
-        bookService.createBook(new Book(nameOfBook, writersList, genresList));
+        bookService.createBook(new Book(nameOfBook), genresList, writersList);
         return getBooksTable(bookService.findAll());
 
     }
 
-    private List<Writer> getWritersList(String writers) {
+    private Set<String> getWritersList(String writers) {
         return Arrays.stream(writers.split(","))
-                .map(writerService::ensureWriter).collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
-    private List<Genre> getGenresList(String genres) {
+    private Set<String> getGenresList(String genres) {
         return Arrays.stream(genres.split(","))
-                .map(genreService::ensureGenre).collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
     }
 
-    @ShellMethod(value = "Update book. Args are: old name of book, new name of book, new genres (separated by comma) and new names of authors (separated by comma).", key = {"update-book", "обновить-книгу"})
-    private String updateBook(@Size(min = 1) String nameOfBook, @Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors) {
+
+    @ShellMethod(value = "Update book. Args are: old name of book, new name of book, " +
+            "new genres (separated by comma) and new names of authors (separated by comma).",
+            key = {"update-book", "обновить-книгу"})
+    private String updateBookByTitle(@Size(min = 1) String nameOfBook, @Size(min = 1) String newNameOfBook,
+                                     @Size(min = 1) String genres, @Size(min = 1) String authors) {
 
         List<Book> books = bookService.findByTitle(nameOfBook);
         if (books.size() == 0) {
@@ -78,25 +84,23 @@ public class UIShell {
         }
 
         Book oldBook = books.get(0);
-        List<Genre> genresList = getGenresList(genres);
-        List<Writer> writersList = getWritersList(authors);
+        return updateBook(newNameOfBook, genres, authors, oldBook);
 
-        Book book = new Book(oldBook.getId(), newNameOfBook, genresList, writersList);
+    }
 
-        bookService.updateBook(book);
+    private String updateBook(@Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors, Book oldBook) {
+        Set<String> genresNames = getGenresList(genres);
+        Set<String> writersNames = getWritersList(authors);
+
+        bookService.updateBook(oldBook.getId(), newNameOfBook, genresNames, writersNames);
         return getBooksTable(bookService.findAll());
-
     }
 
     @ShellMethod(value = "Update book. Args are: book id, new name of book, new genres (separated by comma) and new names of authors (separated by comma).", key = {"update-book-by-id", "обновить-книгу-по-ключу"})
     private String updateBookById(int bookId, @Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors) {
 
         Book oldBook = bookService.findById(bookId);
-        List<Genre> genresList = getGenresList(genres);
-        List<Writer> writersList = getWritersList(authors);
-        Book book = new Book(oldBook.getId(), newNameOfBook, genresList, writersList);
-        bookService.updateBook(book);
-        return getBooksTable(bookService.findAll());
+        return updateBook(newNameOfBook, genres, authors, oldBook);
     }
 
     @ShellMethod(value = "Delete book. Args are: book name", key = {"delete-book", "удалить-книгу"})
@@ -107,13 +111,19 @@ public class UIShell {
 
     @ShellMethod(value = "Show books by author. Args are: author's name", key = {"show-books-by-author", "книги-автора"})
     private String showBooksByAuthor(@Size(min = 1) String nameOfAuthor) {
-        return getBooksTable(bookService.findByAuthorName(nameOfAuthor));
+        return getBooksTable(new ArrayList<>(
+                bookService.findByAuthorName(nameOfAuthor))
+        );
     }
 
     @ShellMethod(value = "Show books by genre. Args are: genre name", key = {"show-books-by-genre", "книги-по-жанру"})
     private String showBooksByGenre(@Size(min = 1) String nameOfGenre) {
-        return getBooksTable(bookService.findByGenreName(nameOfGenre));
+
+        return getBooksTable(new ArrayList<>(
+                bookService.findByGenreName(nameOfGenre)
+        ));
     }
+
 
     @ShellMethod(value = "Show authors by genre. Args are: genre name", key = {"show-authors-by-genre", "авторы-жанра"})
     private String showAuthorsByGenre(@Size(min = 1) String nameOfAuthor) {
@@ -144,11 +154,13 @@ public class UIShell {
             data[verticalIndex][0] = book.getId() + ")";
             data[verticalIndex][1] = book.getTitle();
 
-            data[verticalIndex][2] = book.getGenres()
-                    .stream().map(Genre::getName)
+
+            data[verticalIndex][2] =
+                    //genreService.getGenresByBookId(book.getId()).stream().map(Genre::getName)
+                    data[verticalIndex][2] = book.getGenres().stream().map(Genre::getName)
                     .collect(Collectors.joining("\n"));
 
-            data[verticalIndex][3] = book.getAuthors().stream()
+            data[verticalIndex][3] = writerService.getAuthorsByBookId(book.getId()).stream()
                     .map(Writer::getName)
                     .collect(Collectors.joining("\n"));
 

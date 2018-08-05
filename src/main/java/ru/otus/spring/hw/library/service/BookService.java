@@ -3,9 +3,10 @@ package ru.otus.spring.hw.library.service;
 import ru.otus.spring.hw.library.domain.Book;
 
 import java.util.List;
+import java.util.Set;
 
 public interface BookService {
-    void createBook(Book book);
+    void createBook(Book book, Set<String> genreNames, Set<String> authorsNames);
 
     void deleteBook(String bookTitle);
 
@@ -13,12 +14,12 @@ public interface BookService {
 
     List<Book> findByTitle(String title);
 
-    List<Book> findByAuthorName(String title);
+    Set<Book> findByAuthorName(String title);
 
-    List<Book> findByGenreName(String title);
+    Set<Book> findByGenreName(String title);
 
     Book findById(int id);
 
-    void updateBook(Book book);
+    void updateBook(long bookId, String bookTitle, Set<String> genresList, Set<String> authorsList);
 
 }
