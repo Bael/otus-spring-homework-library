@@ -132,13 +132,23 @@ public class UIShell {
                 .map(Writer::getName).collect(Collectors.joining("\n"));
     }
 
+    @ShellMethod(value = "Add comment to book. Args are: book title", key = {"add-comment-by-title", "комментарий-к-книге"})
+    private String addCommentToBook(@Size(min = 1) String bookTitle, @Size(min = 1) String commentContent) {
+        try {
+            bookService.addCommentByBookTitle(bookTitle, commentContent);
+            return getBooksTable(bookService.findAll());
+        } catch (Exception e) {
+            return e.getLocalizedMessage();
+        }
+    }
+
 
     private String getBooksTable(List<Book> books) {
         final String[][] data;
         final TableModel model;
         final TableBuilder tableBuilder;
 
-        data = new String[books.size() + 1][4];
+        data = new String[books.size() + 1][5];
         model = new ArrayTableModel(data);
         tableBuilder = new TableBuilder(model);
 
@@ -146,6 +156,7 @@ public class UIShell {
         data[0][1] = "Название книги";
         data[0][2] = "Жанры";
         data[0][3] = "Авторы";
+        data[0][4] = "Комментарии";
 
 
         for (int i = 0; i < books.size(); i++) {
@@ -163,6 +174,11 @@ public class UIShell {
             data[verticalIndex][3] = writerService.getAuthorsByBookId(book.getId()).stream()
                     .map(Writer::getName)
                     .collect(Collectors.joining("\n"));
+
+            data[verticalIndex][4] = book.getComments().stream()
+                    .map(comment -> comment.getContent())
+                    .collect(Collectors.joining("\n"));
+
 
 
             tableBuilder.on(at(i, 0)).addAligner(SimpleHorizontalAligner.values()[0]);

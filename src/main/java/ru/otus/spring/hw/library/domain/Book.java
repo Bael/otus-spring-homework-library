@@ -1,7 +1,9 @@
 package ru.otus.spring.hw.library.domain;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,6 +34,20 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "genreid"))
     private Set<Genre> genres = new HashSet<>();
 
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    private List<Comment> comments = new ArrayList<>();
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+    }
 
     public Book(int id, String title) {
         this.id = id;

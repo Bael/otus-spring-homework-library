@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.hw.library.domain.Book;
+import ru.otus.spring.hw.library.domain.Comment;
 import ru.otus.spring.hw.library.domain.Genre;
 import ru.otus.spring.hw.library.domain.Writer;
 import ru.otus.spring.hw.library.repository.BookRepository;
@@ -41,6 +42,22 @@ public class BookServiceImpl implements BookService {
         book.setTitle(bookTitle);
         prepareBookLinks(book, genresNames, authorsNames);
         bookRepository.updateBook(book);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void addCommentByBookTitle(String bookTitle, String commentContent) throws Exception {
+        Comment comment = new Comment();
+        comment.setContent(commentContent);
+
+        List<Book> books = bookRepository.findByTitle(bookTitle);
+        if (books.size() > 0) {
+            Book book = books.get(0);
+            book.addComment(comment);
+            bookRepository.updateBook(book);
+        } else {
+            throw new Exception("Not sure where to add Comment! " + books.size() + " books founded by title" + bookTitle);
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

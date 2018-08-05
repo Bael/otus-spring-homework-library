@@ -22,4 +22,6 @@ public interface BookService {
 
     void updateBook(long bookId, String bookTitle, Set<String> genresList, Set<String> authorsList);
 
+    void addCommentByBookTitle(String bookTitle, String comment) throws Exception;
+
 }
