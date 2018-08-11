@@ -2,17 +2,17 @@ package ru.otus.spring.hw.library.service;
 
 import ru.otus.spring.hw.library.domain.Writer;
 
-import java.util.List;
+import java.util.Set;
 
 public interface WriterService {
 
-    void createWriter(Writer writer);
-
-    List<Writer> findAll();
+    Set<Writer> findAll();
 
     Writer ensureWriter(String name);
 
-    List<Writer> authorsByGenre(String genre);
+    Set<Writer> authorsByGenre(String genre);
 
-    List<Writer> getAuthorsByBookId(long id);
+    Set<Writer> getAuthorsByBookId(long id);
+
+    Writer findByName(String name);
 }

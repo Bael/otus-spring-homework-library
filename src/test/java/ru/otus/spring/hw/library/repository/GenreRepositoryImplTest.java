@@ -24,25 +24,25 @@ public class GenreRepositoryImplTest {
     GenreRepository genreRepository;
 
     @Test
-    public void createGenre() {
+    public void createGenre() throws Exception {
         Genre newGenre = new Genre("science fiction");
-        genreRepository.createGenre(newGenre);
-        Genre genreFromDB = genreRepository.findById(newGenre.getId());
+        genreRepository.save(newGenre);
+        Genre genreFromDB = genreRepository.findById(newGenre.getId()).orElseThrow(Exception::new);
         Assert.assertEquals(genreFromDB.getName(), newGenre.getName());
 
     }
 
     @Test
-    public void updateGenre() {
+    public void updateGenre() throws Exception {
         Genre newGenre = new Genre("science fiction");
 
-        genreRepository.createGenre(newGenre);
-        Genre genreFromDB = genreRepository.findById(newGenre.getId());
+        genreRepository.save(newGenre);
+        Genre genreFromDB = genreRepository.findById(newGenre.getId()).orElseThrow(Exception::new);
         Assert.assertEquals(genreFromDB.getName(), newGenre.getName());
 
         Genre changed = new Genre(newGenre.getId(), "new wave fiction");
-        genreRepository.updateGenre(changed);
-        genreFromDB = genreRepository.findById(newGenre.getId());
+        genreRepository.save(changed);
+        genreFromDB = genreRepository.findById(newGenre.getId()).orElseThrow(Exception::new);
         Assert.assertEquals(genreFromDB.getName(), changed.getName());
 
     }
@@ -50,15 +50,15 @@ public class GenreRepositoryImplTest {
     @Test
     public void deleteGenre() {
         Genre newGenre = new Genre("science fiction");
-        genreRepository.createGenre(newGenre);
+        genreRepository.save(newGenre);
         genreRepository.deleteById(newGenre.getId());
 
-        Assert.assertNull(genreRepository.findById(newGenre.getId()));
+        Assert.assertFalse(genreRepository.findById(newGenre.getId()).isPresent());
     }
 
     @Test
     public void findGenres() {
-        Assert.assertEquals(2, genreRepository.findGenres("saga").size());
+        Assert.assertEquals(2, genreRepository.findGenresByNameLike("%saga%").size());
     }
 
 
@@ -74,9 +74,9 @@ public class GenreRepositoryImplTest {
     public void setUp() {
         genreRepository.findAll().forEach(genre -> genreRepository.deleteById(genre.getId()));
 
-        genreRepository.createGenre(new Genre("classical"));
-        genreRepository.createGenre(new Genre("horror"));
-        genreRepository.createGenre(new Genre("saga"));
-        genreRepository.createGenre(new Genre("epic saga"));
+        genreRepository.save(new Genre("classical"));
+        genreRepository.save(new Genre("horror"));
+        genreRepository.save(new Genre("saga"));
+        genreRepository.save(new Genre("epic saga"));
     }
 }

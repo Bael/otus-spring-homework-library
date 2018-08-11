@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import ru.otus.spring.hw.library.domain.Book;
 import ru.otus.spring.hw.library.domain.Genre;
 import ru.otus.spring.hw.library.domain.Writer;
+import ru.otus.spring.hw.library.exceptions.NotFoundException;
 import ru.otus.spring.hw.library.service.BookService;
 import ru.otus.spring.hw.library.service.GenreService;
 import ru.otus.spring.hw.library.service.WriterService;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +72,7 @@ public class UIShell {
             "new genres (separated by comma) and new names of authors (separated by comma).",
             key = {"update-book", "обновить-книгу"})
     private String updateBookByTitle(@Size(min = 1) String nameOfBook, @Size(min = 1) String newNameOfBook,
-                                     @Size(min = 1) String genres, @Size(min = 1) String authors) {
+                                     @Size(min = 1) String genres, @Size(min = 1) String authors) throws NotFoundException {
 
         List<Book> books = bookService.findByTitle(nameOfBook);
         if (books.size() == 0) {
@@ -88,7 +90,7 @@ public class UIShell {
 
     }
 
-    private String updateBook(@Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors, Book oldBook) {
+    private String updateBook(@Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors, Book oldBook) throws NotFoundException {
         Set<String> genresNames = getGenresList(genres);
         Set<String> writersNames = getWritersList(authors);
 
@@ -97,9 +99,10 @@ public class UIShell {
     }
 
     @ShellMethod(value = "Update book. Args are: book id, new name of book, new genres (separated by comma) and new names of authors (separated by comma).", key = {"update-book-by-id", "обновить-книгу-по-ключу"})
-    private String updateBookById(int bookId, @Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors) {
+    private String updateBookById(int bookId, @Size(min = 1) String newNameOfBook, @Size(min = 1) String genres, @Size(min = 1) String authors) throws NotFoundException {
 
-        Book oldBook = bookService.findById(bookId);
+        Book oldBook = bookService.findById(bookId).orElseThrow(
+                () -> new EntityNotFoundException("book with " + bookId + " not found"));
         return updateBook(newNameOfBook, genres, authors, oldBook);
     }
 

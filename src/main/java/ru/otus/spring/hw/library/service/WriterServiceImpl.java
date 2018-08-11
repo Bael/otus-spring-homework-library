@@ -8,8 +8,8 @@ import ru.otus.spring.hw.library.domain.Writer;
 import ru.otus.spring.hw.library.repository.BookRepository;
 import ru.otus.spring.hw.library.repository.WriterRepository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class WriterServiceImpl implements WriterService {
@@ -22,38 +22,40 @@ public class WriterServiceImpl implements WriterService {
         this.bookRepository = bookRepository;
     }
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void createWriter(Writer writer) {
-        writerRepository.createWriter(writer);
-    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public List<Writer> findAll() {
-        return writerRepository.findAll();
+    public Set<Writer> findAll() {
+        return (Set<Writer>) writerRepository.findAll();
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public Writer ensureWriter(String name) {
-        return writerRepository.ensureByName(name);
+        Writer w = writerRepository.findByName(name);
+        if (w == null) {
+            w = new Writer(name);
+            writerRepository.save(w);
+        }
+        return writerRepository.findByName(name);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public List<Writer> authorsByGenre(String genre) {
-
-        return writerRepository.authorsByGenre(genre);
+    public Set<Writer> authorsByGenre(String genre) {
+        return new HashSet<>(writerRepository.authorsByGenre(genre));
     }
 
     @Override
-    public List<Writer> getAuthorsByBookId(long id) {
-        Book book = bookRepository.findById(id);
-        if (book != null) {
-            return new ArrayList<>(book.getAuthors());
-        } else {
-            return new ArrayList<>();
-        }
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Set<Writer> getAuthorsByBookId(long id) {
+        Book book = bookRepository.findById(id).orElse(new Book());
+        return book.getAuthors();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Writer findByName(String name) {
+        return writerRepository.findByName(name);
     }
 }

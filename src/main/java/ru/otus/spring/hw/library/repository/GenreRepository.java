@@ -1,27 +1,23 @@
 package ru.otus.spring.hw.library.repository;
 
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import ru.otus.spring.hw.library.domain.Genre;
 
 import java.util.List;
 
-public interface GenreRepository {
+public interface GenreRepository extends CrudRepository<Genre, Long> {
 
-    void createGenre(Genre genre);
+    List<Genre> findGenresByName(String name);
 
-    Genre findById(long id);
+    List<Genre> findGenresByNameLike(String name);
 
-    void updateGenre(Genre genre);
+    Genre findByName(String name);
 
-    void deleteById(long id);
 
-    List<Genre> findGenres(String name);
-
-    Genre findGenre(String name);
-
-    List<Genre> findAll();
-
+    @Query(value = "SELECT g.* FROM BOOKS b join BOOK_GENRE bg on bg.bookid = b.id "
+            + " join GENRES g on g.id = bg.genreid WHERE b.id = ?", nativeQuery = true)
     List<Genre> genresByBookId(long bookId);
 
-    Genre ensureGenre(String name);
 
 }

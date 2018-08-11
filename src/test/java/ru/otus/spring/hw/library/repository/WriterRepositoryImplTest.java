@@ -26,25 +26,25 @@ public class WriterRepositoryImplTest {
     public void setUp() {
         writerDAO.findAll().forEach(writer -> writerDAO.deleteById(writer.getId()));
 
-        writerDAO.createWriter(new Writer("Fedor Dostoevsky"));
-        writerDAO.createWriter(new Writer("Dan Abnet"));
-        writerDAO.createWriter(new Writer("Linda Gamilton"));
-        writerDAO.createWriter(new Writer("Jim Butcher"));
-        writerDAO.createWriter(new Writer("Ron Butcher"));
-        writerDAO.createWriter(new Writer("Roger Gelyazny"));
-        writerDAO.createWriter(new Writer("Ray Bradberry"));
+        writerDAO.save(new Writer("Fedor Dostoevsky"));
+        writerDAO.save(new Writer("Dan Abnet"));
+        writerDAO.save(new Writer("Linda Gamilton"));
+        writerDAO.save(new Writer("Jim Butcher"));
+        writerDAO.save(new Writer("Ron Butcher"));
+        writerDAO.save(new Writer("Roger Gelyazny"));
+        writerDAO.save(new Writer("Ray Bradberry"));
 
     }
 
 
     @Test
-    public void updateWriter() {
+    public void updateWriter() throws Exception {
         Writer w = new Writer("Tendryakov");
-        writerDAO.createWriter(w);
+        writerDAO.save(w);
         long id = w.getId();
         Writer writer = new Writer(id, "Tenkerry");
-        writerDAO.updateWriter(writer);
-        Writer updatedWriter = writerDAO.findById(id);
+        writerDAO.save(writer);
+        Writer updatedWriter = writerDAO.findById(id).orElseThrow(Exception::new);
         Assert.assertEquals(updatedWriter.getName(), writer.getName());
 
     }
@@ -52,19 +52,19 @@ public class WriterRepositoryImplTest {
     @Test
     public void deleteWriter() {
         writerDAO.findAll().forEach(writer -> writerDAO.deleteById(writer.getId()));
-        Assert.assertEquals(0, writerDAO.findAll().size());
+        Assert.assertFalse(writerDAO.findAll().iterator().hasNext());
 
 
     }
 
     @Test
     public void findByName() {
-        Assert.assertEquals(2, writerDAO.findByName("Butcher").size());
+        Assert.assertEquals(2, writerDAO.findByNameLike("Butcher").size());
     }
 
     @Test
     public void findByExactName() {
-        Assert.assertNotNull(writerDAO.findByExactName("Roger Gelyazny"));
+        Assert.assertNotNull(writerDAO.findByName("Roger Gelyazny"));
     }
 
 

@@ -18,7 +18,11 @@ public class Book {
     private long id;
     private String title;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REMOVE
+    }, fetch = FetchType.EAGER)
     @JoinTable(name = "BOOK_AUTHOR",
             joinColumns = @JoinColumn(name = "bookid"),
             inverseJoinColumns = @JoinColumn(name = "authorid"))
@@ -26,7 +30,8 @@ public class Book {
 
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
-            CascadeType.MERGE
+            CascadeType.MERGE,
+            CascadeType.REMOVE
     }, fetch = FetchType.EAGER)
 
     @JoinTable(name = "BOOK_GENRE",

@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.hw.library.domain.Book;
 import ru.otus.spring.hw.library.domain.Writer;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
@@ -34,13 +36,13 @@ public class BookRepositoryImplTest {
     private Writer writer;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
 
         Writer w = new Writer("John Tolkien");
-        writerDAO.createWriter(w);
+        writerDAO.save(w);
 
         long id = w.getId();
-        writer = writerDAO.findById(id);
+        writer = writerDAO.findById(id).orElseThrow(Exception::new);
     }
 
     @Test
@@ -49,10 +51,10 @@ public class BookRepositoryImplTest {
         book.setTitle("hobbit");
         book.getAuthors().add(new Writer("arthur conan doyle"));
 
-        bookDAO.createBook(book);
+        bookDAO.save(book);
         System.out.println(book.getId());
 
-        Book bookFromDB = bookDAO.findById(book.getId());
+        Book bookFromDB = bookDAO.findById(book.getId()).orElseThrow(EntityNotFoundException::new);
 
         Assert.assertEquals(book.getId(), bookFromDB.getId());
         Assert.assertEquals(book.getTitle(), bookFromDB.getTitle());
@@ -64,8 +66,8 @@ public class BookRepositoryImplTest {
     public void findByTitle() {
         Book book = new Book();
         book.setTitle("Путешествие Геккельбери Финна");
-        bookDAO.createBook(book);
-        List<Book> books = bookDAO.findByTitle("Геккельбери");
+        bookDAO.save(book);
+        List<Book> books = bookDAO.findByTitleLike("%Геккельбери%");
 
         books.forEach(book1 -> System.out.println(book.getId() + " " + book.getTitle()));
         Assert.assertEquals("Ожидалось найти одну книгу", 1, books.size());
@@ -87,23 +89,23 @@ public class BookRepositoryImplTest {
 //    }
 
     @Test
-    public void updateBook() {
+    public void updateBook() throws Exception {
         Book book = new Book();
         book.setTitle("hobbit");
-        bookDAO.createBook(book);
+        bookDAO.save(book);
 
-        Book bookFromDB = bookDAO.findById(book.getId());
+        Book bookFromDB = bookDAO.findById(book.getId()).orElse(new Book());
 
         bookFromDB.getAuthors().add(writer);
 
-//        bookFromDB.setTitle("Hobbit 2");
-//        bookDAO.updateBook(bookFromDB);
-//
-//
-//        Book updateBook = bookDAO.findById(book.getId());
-//        Assert.assertEquals(1, updateBook.getAuthors().size());
-//        Assert.assertEquals("John Tolkien", updateBook.getAuthors().get(0).getName());
-//        Assert.assertEquals("Hobbit 2", updateBook.getTitle());
+        bookFromDB.setTitle("Hobbit 2");
+        bookDAO.save(bookFromDB);
+        Book updateBook = bookDAO.findById(book.getId()).orElseThrow(Exception::new);
+        Set<Writer> authors = book.getAuthors();
+
+        Assert.assertEquals(1, authors.size());
+        Assert.assertEquals("John Tolkien", authors.iterator().next().getName());
+        Assert.assertEquals("Hobbit 2", updateBook.getTitle());
 
     }
 
@@ -113,7 +115,7 @@ public class BookRepositoryImplTest {
 
         Book book = new Book();
         book.setTitle("hobbit");
-        bookDAO.createBook(book);
+        bookDAO.save(book);
         List<Book> books = bookDAO.findAll();
         Assert.assertTrue(books.stream().anyMatch(book1 -> book1.getId() == book.getId() && book1.getTitle().equals(book.getTitle())));
 
@@ -125,9 +127,9 @@ public class BookRepositoryImplTest {
     public void deleteById() {
         Book book = new Book();
         book.setTitle("Путешествие Геккельбери Финна");
-        bookDAO.createBook(book);
+        bookDAO.save(book);
         bookDAO.deleteById(book.getId());
-        Assert.assertNull(bookDAO.findById(book.getId()));
+        Assert.assertFalse(bookDAO.findById(book.getId()).isPresent());
     }
 
 

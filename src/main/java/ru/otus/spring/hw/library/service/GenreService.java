@@ -9,4 +9,6 @@ public interface GenreService {
     Genre ensureGenre(String name);
 
     List<Genre> getGenresByBookId(long id);
+
+    Genre findByName(String name);
 }
