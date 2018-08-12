@@ -8,6 +8,8 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
+
+    @Column(length = 500)
     private String content;
 
     public Comment() {

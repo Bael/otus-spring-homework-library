@@ -17,6 +17,7 @@ public class Writer {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
+    @Column(length = 100)
     private String name;
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,

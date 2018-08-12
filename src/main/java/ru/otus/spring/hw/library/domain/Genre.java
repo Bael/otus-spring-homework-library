@@ -14,6 +14,7 @@ public class Genre {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    @Column(length = 100)
     private String name;
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
