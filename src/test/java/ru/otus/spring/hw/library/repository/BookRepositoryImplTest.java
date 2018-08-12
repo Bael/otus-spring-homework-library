@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.hw.library.domain.Book;
+import ru.otus.spring.hw.library.domain.Genre;
 import ru.otus.spring.hw.library.domain.Writer;
 
 import java.util.List;
@@ -30,6 +31,9 @@ public class BookRepositoryImplTest {
 
     @Autowired
     WriterRepository writerDAO;
+
+    @Autowired
+    GenreRepository genreDAO;
 
     private Writer writer;
 
@@ -72,19 +76,18 @@ public class BookRepositoryImplTest {
         Assert.assertTrue(books.stream().allMatch(book1 -> book1.getId() == book.getId() && book1.getTitle().equals(book.getTitle())));
     }
 
-//    @Test
-//    public void findAll() {
-//        int count = bookDAO.findAll().size();
-//
-//        Book book = new Book();
-//        book.setTitle("hobbit");
-//        bookDAO.createBook(book);
-//
-//        List<Book> books = bookDAO.findAll();
-//
-//        Assert.assertEquals(count + 1, books.size());
-//
-//    }
+    @Test
+    public void findByGenreName() {
+        Genre g = new Genre("comedy");
+        genreDAO.createGenre(g);
+        Book book = new Book();
+        book.setTitle("Путешествие Геккельбери Финна");
+        book.addGenre(g);
+        int booksBefore = bookDAO.findByGenreName("comedy").size();
+        bookDAO.createBook(book);
+        List<Book> books = bookDAO.findByGenreName("comedy");
+        Assert.assertEquals(booksBefore + 1, books.size());
+    }
 
     @Test
     public void updateBook() {

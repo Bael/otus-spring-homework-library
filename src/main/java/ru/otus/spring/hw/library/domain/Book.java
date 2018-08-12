@@ -16,11 +16,13 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
+
+    @Column(length = 400)
     private String title;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "BOOK_AUTHOR",
-            joinColumns = @JoinColumn(name = "bookid"),
+            joinColumns = @JoinColumn(name = "bookid", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "authorid"))
     private Set<Writer> authors = new HashSet<>();
 
@@ -30,7 +32,7 @@ public class Book {
     }, fetch = FetchType.EAGER)
 
     @JoinTable(name = "BOOK_GENRE",
-            joinColumns = @JoinColumn(name = "bookid"),
+            joinColumns = @JoinColumn(name = "bookid", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "genreid"))
     private Set<Genre> genres = new HashSet<>();
 
