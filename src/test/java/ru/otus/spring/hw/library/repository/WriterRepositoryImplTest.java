@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.shell.jline.ScriptShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,19 +21,26 @@ public class WriterRepositoryImplTest {
 
 
     @Autowired
-    WriterRepository writerDAO;
+    WriterRepository writerRepository;
+
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     @Before
     public void setUp() {
-        writerDAO.findAll().forEach(writer -> writerDAO.deleteById(writer.getId()));
 
-        writerDAO.save(new Writer("Fedor Dostoevsky"));
-        writerDAO.save(new Writer("Dan Abnet"));
-        writerDAO.save(new Writer("Linda Gamilton"));
-        writerDAO.save(new Writer("Jim Butcher"));
-        writerDAO.save(new Writer("Ron Butcher"));
-        writerDAO.save(new Writer("Roger Gelyazny"));
-        writerDAO.save(new Writer("Ray Bradberry"));
+        // TODO - REMOVE. (reason - de.flapdoodle.embed.mongo does not work)
+        mongoTemplate.dropCollection(Writer.class);
+
+        writerRepository.findAll().forEach(writer -> writerRepository.deleteById(writer.getId()));
+
+        writerRepository.save(new Writer("Fedor Dostoevsky"));
+        writerRepository.save(new Writer("Dan Abnet"));
+        writerRepository.save(new Writer("Linda Gamilton"));
+        writerRepository.save(new Writer("Jim Butcher"));
+        writerRepository.save(new Writer("Ron Butcher"));
+        writerRepository.save(new Writer("Roger Gelyazny"));
+        writerRepository.save(new Writer("Ray Bradberry"));
 
     }
 
@@ -40,31 +48,33 @@ public class WriterRepositoryImplTest {
     @Test
     public void updateWriter() throws Exception {
         Writer w = new Writer("Tendryakov");
-        writerDAO.save(w);
-        long id = w.getId();
-        Writer writer = new Writer(id, "Tenkerry");
-        writerDAO.save(writer);
-        Writer updatedWriter = writerDAO.findById(id).orElseThrow(Exception::new);
+        writerRepository.save(w);
+
+        Writer writer = writerRepository.findByName("Tendryakov");
+        writer.setName("Tennesy");
+        writerRepository.save(writer);
+
+        Writer updatedWriter = writerRepository.findById(w.getId()).orElseThrow(Exception::new);
         Assert.assertEquals(updatedWriter.getName(), writer.getName());
 
     }
 
     @Test
     public void deleteWriter() {
-        writerDAO.findAll().forEach(writer -> writerDAO.deleteById(writer.getId()));
-        Assert.assertFalse(writerDAO.findAll().iterator().hasNext());
+        writerRepository.findAll().forEach(writer -> writerRepository.deleteById(writer.getId()));
+        Assert.assertFalse(writerRepository.findAll().iterator().hasNext());
 
 
     }
 
     @Test
     public void findByName() {
-        Assert.assertEquals(2, writerDAO.findByNameLike("Butcher").size());
+        Assert.assertEquals(2, writerRepository.findByNameLike("Butcher").size());
     }
 
     @Test
     public void findByExactName() {
-        Assert.assertNotNull(writerDAO.findByName("Roger Gelyazny"));
+        Assert.assertNotNull(writerRepository.findByName("Roger Gelyazny"));
     }
 
 

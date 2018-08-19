@@ -1,6 +1,6 @@
 package ru.otus.spring.hw.library.exceptions;
 
-public class NotFoundException extends Exception {
+public class NotFoundException extends RuntimeException {
 
 
     public NotFoundException(String message) {

@@ -1,48 +1,62 @@
 package ru.otus.spring.hw.library.domain;
 
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "Books")
-@NamedNativeQuery(query = "select books.* from books join book_author as ba on books.id = ba.bookid  "
-        + " join writers on writers.id = ba.authorid where writers.name like :authorName"
-        , name = "Books.queryBooksByAuthorName", resultClass = Book.class)
+@Document
 public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
+    private String id;
 
-    @Column(length = 500)
     private String title;
-
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE,
-            CascadeType.REMOVE
-    }, fetch = FetchType.EAGER)
-    @JoinTable(name = "BOOK_AUTHOR",
-            joinColumns = @JoinColumn(name = "bookid", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "authorid"))
+    @DBRef(lazy = false)
     private Set<Writer> authors = new HashSet<>();
 
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE,
-            CascadeType.REMOVE
-    }, fetch = FetchType.EAGER)
+    public Book(String id, String title) {
+        this.id = id;
+        this.title = title;
+    }
 
-    @JoinTable(name = "BOOK_GENRE",
-            joinColumns = @JoinColumn(name = "bookid", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "genreid"))
     private Set<Genre> genres = new HashSet<>();
-
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<Comment> comments = new ArrayList<>();
+
+    public Book(String id, String title, Set<Genre> genres, Set<Writer> authors) {
+        this.id = id;
+        this.title = title;
+        this.authors = authors;
+        this.genres = genres;
+    }
+
+    public Book() {
+    }
+
+    public Book(String title) {
+        this.title = title;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", authors=" + authors +
+                ", genres=" + genres +
+                ", comments=" + comments +
+                '}';
+    }
+
+    public Book(String title, Set<Writer> authors, Set<Genre> genres) {
+        this.title = title;
+        this.authors = authors;
+        this.genres = genres;
+    }
 
     public List<Comment> getComments() {
         return comments;
@@ -56,36 +70,11 @@ public class Book {
         this.comments.add(comment);
     }
 
-    public Book(int id, String title) {
-        this.id = id;
-        this.title = title;
-    }
-
-    public Book() {
-    }
-
-    public Book(String title) {
-        this.title = title;
-    }
-
-    public Book(long id, String title, Set<Genre> genres, Set<Writer> authors) {
-        this.id = id;
-        this.title = title;
-        this.authors = authors;
-        this.genres = genres;
-    }
-
-    public Book(String title, Set<Writer> authors, Set<Genre> genres) {
-        this.title = title;
-        this.authors = authors;
-        this.genres = genres;
-    }
-
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -110,7 +99,6 @@ public class Book {
             authors = new HashSet<>();
         }
         authors.add(author);
-        author.getBooks().add(this);
     }
 
     public void addGenre(Genre genre) {
@@ -118,7 +106,6 @@ public class Book {
             genres = new HashSet<>();
         }
         genres.add(genre);
-        genre.getBooks().add(this);
     }
 
     public Set<Genre> getGenres() {
@@ -129,13 +116,4 @@ public class Book {
         this.genres = genres;
     }
 
-    @Override
-    public String toString() {
-        return "Book{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", authors=" + authors +
-                ", genres=" + genres +
-                '}';
-    }
 }

@@ -12,7 +12,7 @@ public interface WriterService {
 
     Set<Writer> authorsByGenre(String genre);
 
-    Set<Writer> getAuthorsByBookId(long id);
+    Set<Writer> getAuthorsByBookId(String id);
 
     Writer findByName(String name);
 }

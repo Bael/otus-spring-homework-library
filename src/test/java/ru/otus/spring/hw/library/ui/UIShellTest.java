@@ -1,14 +1,18 @@
 package ru.otus.spring.hw.library.ui;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.shell.jline.ScriptShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.otus.spring.hw.library.domain.Book;
+import ru.otus.spring.hw.library.domain.Writer;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -20,8 +24,19 @@ import static org.junit.Assert.assertNotNull;
 public class UIShellTest {
 
     @Autowired
+    MongoTemplate mongoTemplate;
+
+    @Autowired
     private Shell shell;
 
+    @Before
+    public void setUp() {
+        // TODO - REMOVE. (reason - de.flapdoodle.embed.mongo does not work)
+        mongoTemplate.dropCollection(Book.class);
+        mongoTemplate.dropCollection(Writer.class);
+
+
+    }
     @Test
     public void contextLoads() {
         Object help = shell.evaluate(() -> "help");

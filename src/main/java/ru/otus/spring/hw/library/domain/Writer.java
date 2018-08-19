@@ -1,38 +1,34 @@
 package ru.otus.spring.hw.library.domain;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
-@Entity
-@Table(name = "Writers")
-@NamedNativeQuery(query = "select distinct writers.* from writers inner join book_author ba on writers.id = ba.authorid  "
-        + " inner join books on books.id = ba.bookid "
-        + " inner join book_genre bg on books.id = bg.bookid "
-        + " inner join genres on genres.id = bg.genreid where genres.name = :genre "
-        , name = "Writers.queryAuthorsByGenre", resultClass = Writer.class)
+@Document
 public class Writer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long id;
-    @Column(length = 100)
+    private String id;
+
     private String name;
-    @ManyToMany(fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL,
-            mappedBy = "authors")
-    private Set<Book> books;
+
+    public Writer(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Writer{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 
     public Writer() {
     }
 
-    public Set<Book> getBooks() {
-        return (books == null ? new HashSet<>() : books);
-    }
-
-    public Writer(long id, String name) {
-        this.id = id;
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -40,15 +36,11 @@ public class Writer {
         this.name = name;
     }
 
-    public void setBooks(Set<Book> books) {
-        this.books = books;
-    }
-
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
