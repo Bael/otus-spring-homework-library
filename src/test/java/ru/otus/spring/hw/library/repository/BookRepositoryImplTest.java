@@ -5,13 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.shell.jline.ScriptShellApplicationRunner;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.otus.spring.hw.library.domain.Book;
 import ru.otus.spring.hw.library.domain.Genre;
@@ -22,26 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {
         ScriptShellApplicationRunner.SPRING_SHELL_SCRIPT_ENABLED + "=false",
         InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=false"
-} /*, classes = {
-        LibraryApplication.class,
-        TestConfig.class // <--- Don't forget THIS
-} */)
-@DataMongoTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = BEFORE_EACH_TEST_METHOD)
+})
 public class BookRepositoryImplTest {
 
-    @Autowired
-    MongoTemplate mongoTemplate;
-
-//    @Autowired
-//    WriterService writerService;
 
     @Autowired
     BookRepository bookRepository;
@@ -53,30 +36,21 @@ public class BookRepositoryImplTest {
 
     @Before
     public void setUp() {
-        // TODO - REMOVE. (reason - de.flapdoodle.embed.mongo does not work)
-        mongoTemplate.dropCollection(Book.class);
-        mongoTemplate.dropCollection(Writer.class);
-
-
+        // Почему то книги пишутся в реальную базу, так и не смог понять почему.
+        bookRepository.deleteAll();
+        writerRepository.deleteAll();
     }
 
     @Test
     public void createBook() {
-
-
         Book book = new Book();
         book.setTitle("hobbit");
-
         Writer writer = new Writer("arthur conan doyle");
-
         writerRepository.save(writer);
-
 
         book.getAuthors().add(writer);
 
         bookRepository.save(book);
-        System.out.println(book.getId());
-
         Book bookFromDB = bookRepository.findByTitle(book.getTitle()).orElseThrow(() -> new NotFoundException("Not founded"));
 
         Assert.assertEquals(book.getId(), bookFromDB.getId());
@@ -98,11 +72,9 @@ public class BookRepositoryImplTest {
         bookRepository.save(book);
 
         List<Book> books = bookRepository.findByGenresContaining("drama");
-        //System.out.println(books);
         final Set<Writer> writers = new HashSet<>();
-        books.stream().map(book3 -> book3.getAuthors()).forEach(writers1 -> writers.addAll(writers1));
-        System.out.println(writers.iterator().next());
-        Assert.assertEquals(true, writers.stream().anyMatch(writer1 -> writer1.getName().equals("doyle")));
+        books.stream().map(Book::getAuthors).forEach(writers::addAll);
+        Assert.assertTrue(writers.stream().anyMatch(writer1 -> writer1.getName().equals("doyle")));
     }
 
 
@@ -117,20 +89,6 @@ public class BookRepositoryImplTest {
         Assert.assertEquals("Ожидалось найти одну книгу", 1, books.size());
         Assert.assertTrue(books.stream().allMatch(book1 -> book1.getTitle().equals(book.getTitle())));
     }
-
-//    @Test
-//    public void findAll() {
-//        int count = bookRepository.findAll().size();
-
-//        Book book = new Book();
-//        book.setTitle("hobbit");
-//        bookRepository.createBook(book);
-//
-//        List<Book> books = bookRepository.findAll();
-//
-//        Assert.assertEquals(count + 1, books.size());
-//
-//    }
 
     @Test
     public void updateBook() throws Exception {
@@ -166,9 +124,7 @@ public class BookRepositoryImplTest {
         bookRepository.save(book);
         List<Book> books = bookRepository.findAll();
         Assert.assertTrue(books.stream().anyMatch(book1 -> book1.getTitle().equals(book.getTitle())));
-
         Assert.assertEquals(count + 1, books.size());
-
     }
 
     @Test
@@ -179,6 +135,4 @@ public class BookRepositoryImplTest {
         bookRepository.deleteById(book.getId());
         Assert.assertFalse(bookRepository.findById(book.getId()).isPresent());
     }
-
-
 }

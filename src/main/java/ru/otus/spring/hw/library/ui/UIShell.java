@@ -5,6 +5,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.table.*;
 import org.springframework.stereotype.Service;
 import ru.otus.spring.hw.library.domain.Book;
+import ru.otus.spring.hw.library.domain.Comment;
 import ru.otus.spring.hw.library.domain.Genre;
 import ru.otus.spring.hw.library.domain.Writer;
 import ru.otus.spring.hw.library.exceptions.NotFoundException;
@@ -100,12 +101,12 @@ public class UIShell {
     }
 
 
-//    @ShellMethod(value = "Show authors by genre. Args are: genre name", key = {"show-authors-by-genre", "авторы-жанра"})
-//    private String showAuthorsByGenre(@Size(min = 1) String nameOfAuthor) {
-//
-//        return writerService.authorsByGenre(nameOfAuthor).stream()
-//                .map(Writer::getName).collect(Collectors.joining("\n"));
-//    }
+    @ShellMethod(value = "Show authors by genre. Args are: genre name", key = {"show-authors-by-genre", "авторы-жанра"})
+    private String showAuthorsByGenre(@Size(min = 1) String nameOfAuthor) {
+
+        return writerService.authorsByGenre(nameOfAuthor).stream()
+                .map(Writer::getName).collect(Collectors.joining("\n"));
+    }
 
     @ShellMethod(value = "Add comment to book. Args are: book title", key = {"add-comment-by-title", "комментарий-к-книге"})
     private String addCommentToBook(@Size(min = 1) String bookTitle, @Size(min = 1) String commentContent) {
@@ -151,7 +152,7 @@ public class UIShell {
                     .collect(Collectors.joining("\n"));
 
             data[verticalIndex][4] = book.getComments().stream()
-                    .map(comment -> comment.getContent())
+                    .map(Comment::getContent)
                     .collect(Collectors.joining("\n"));
 
 
